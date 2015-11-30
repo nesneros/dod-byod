@@ -6,8 +6,10 @@ yum install -y -q autoconf automake btrfs-progs docker gettext-devel git libcgro
 
 fallocate -l 10G ~/btrfs.img
 mkfs.btrfs ~/btrfs.img
-mkdir /var/bocker
-mount -o loop ~/btrfs.img /var/bocker
+mkdir -p /var/byod/btrfs /var/byod/images /var/byod/containers
+touch /var/byod/btrfs/UNMOUNTED
+mount -o loop ~/btrfs.img /var/byod/btrfs
+btrfs subvolume create /var/byod/btrfs/empty
 
 pip install git+https://github.com/larsks/undocker
 systemctl start docker.service
@@ -23,8 +25,6 @@ make
 mv unshare /usr/bin/unshare
 cd ..
 
-ln -s /vagrant/bocker /usr/bin/bocker
-
 echo 1 > /proc/sys/net/ipv4/ip_forward
 iptables --flush
 iptables -t nat -A POSTROUTING -o bridge0 -j MASQUERADE
@@ -33,8 +33,6 @@ iptables -t nat -A POSTROUTING -o enp0s3 -j MASQUERADE
 ip link add bridge0 type bridge
 ip addr add 10.0.0.1/24 dev bridge0
 ip link set bridge0 up
-
-git clone https://github.com/nesneros/dod-byod.git
 ) 2>&1
 SCRIPT
 
