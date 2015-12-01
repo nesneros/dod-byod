@@ -21,7 +21,6 @@ ln -s $conFs $conDir/fs
 
 echo "Container $conId created. Cmd: $cmd"
 
-# Function to define network for network isolation
 function setupNetwork {
     # Return if byod interfaces already created
     [[ -f /var/run/netns/netns_byod ]] && return
@@ -36,9 +35,10 @@ function setupNetwork {
     ip netns exec netns_byod ip link set dev byod1 up
     ip netns exec netns_byod ip route add default via 10.0.0.1
 }
+setupNetwork
 
-# TODO call unshare and chroot to execute cmd 'containerized'
-# TOTO for network isolation also call 'ip netns exec netns_byod'
-
+ip netns exec netns_byod \
+unshare -f -muip --mount-proc  \
+chroot $conFs /bin/sh -c "/bin/mount -t proc proc /proc && $cmd"
 
 
